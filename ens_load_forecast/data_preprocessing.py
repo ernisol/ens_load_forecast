@@ -236,4 +236,7 @@ def get_merged_dataset(
     df_merged = pd.merge(
         left=df_merged, right=df_weather, on=[cst.DELIVERY_TS, cst.ZONE], how="inner"
     )
+
+    # Drop nan values
+    df_merged = df_merged.dropna(how="any", axis="index")
     return df_merged

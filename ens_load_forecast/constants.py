@@ -23,3 +23,29 @@ GST = "gst"  # Wind gust, knots
 PSN = "psn"  # Probability of snow, percent
 
 SELECTED_WEATHER_FEATURES = [TMP, DPT, SKY, WDR, GST, PSN]
+
+# Features
+COS_WDR = "cos_wdr"
+SIN_WDR = "sin_wdr"
+DAY_OF_WEEK = "day_of_week"
+DAY_NAMES = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+]
+
+FEATURES_LIST = [
+    LOAD_FORECAST,
+    TMP,
+    DPT,
+    SKY,
+    GST,
+    PSN,
+    COS_WDR,
+    SIN_WDR,
+    *[f"{DAY_OF_WEEK}_{name}" for name in DAY_NAMES],
+]
