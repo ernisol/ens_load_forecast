@@ -1,7 +1,7 @@
 """Module to load and pre-process data (handle index, timezones, etc.)."""
+import numpy as np
 import pandas as pd
 import pytz
-import numpy as np
 
 import ens_load_forecast.constants as cst
 from ens_load_forecast.paths import (

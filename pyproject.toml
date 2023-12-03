@@ -12,6 +12,9 @@ readme = "README.md"
 requires-python = ">=3.9"
 dynamic = ["version"]
 
+[tool.setuptools]
+packages = ["ens_load_forecast"]
+
 [tool.ruff]
 select = ["D", "E", "F", "I", "N", "W"]
 ignore = [

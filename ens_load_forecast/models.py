@@ -1,12 +1,12 @@
 """Module used for model training."""
 
-from typing import Any, Dict, Tuple
-import joblib
 import json
+from typing import Any, Dict, Tuple
 
+import joblib
 import pandas as pd
 from sklearn.base import BaseEstimator
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from sklearn.model_selection import train_test_split
@@ -182,7 +182,7 @@ def save_models(models: Dict[str, Any], scores: Dict[str, Any]) -> None:
     models : Dict[str, Any]
         Models dictionary (one key per zone, then one key per model type)
     scores : Dict[str, Any]
-        Scores dictionary (one key per zone, then one key per model type then train/test)
+        Scores dictionary (one key per zone, one key per model type then train/test)
     """
     if not PATH_SAVED_MODELS.exists():
         PATH_SAVED_MODELS.mkdir()

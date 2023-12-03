@@ -1,6 +1,7 @@
 """Module implementing graphs."""
 
 from typing import Any
+
 import geopandas as gpd
 import pandas as pd
 import plotly.express as px
@@ -9,8 +10,8 @@ import plotly.graph_objects as go
 import ens_load_forecast.constants as cst
 from ens_load_forecast.paths import PATH_MAP_DATA
 from ens_load_forecast.plot_params import (
-    MAP_LAYOUT,
     EQUAL_ASPECT_RATIO_LAYOUT,
+    MAP_LAYOUT,
     TRANSPARENT_RED_MARKERS,
 )
 
@@ -25,6 +26,9 @@ def plot_load_per_zone(df: pd.DataFrame, **kwargs: Any) -> None:
         Expected columns:
         - "zone"
         - "load"
+
+    **kwargs : Any
+        Extra arguments for plotly.
     """
     fig = go.Figure()
     for zone in df[cst.ZONE].unique():
@@ -53,6 +57,8 @@ def plot_load_seasonal(df: pd.DataFrame, zone: str, **kwargs: Any) -> None:
         The load data
     zone : str
         The zone
+    **kwargs : Any
+        Extra arguments for plotly.
     """
     load_df = df[df[cst.ZONE] == zone].drop(labels="zone", axis="columns")
     load_df[cst.DAY_OF_YEAR] = load_df.index.dayofyear
@@ -84,6 +90,8 @@ def plot_on_map(df: pd.DataFrame, quantity_key: str, **kwargs: Any) -> None:
         DataFrame with at least a `zone` column.
     quantity_key : str
         Name of DataFrame column used to color the map.
+    **kwargs : Any
+        Extra arguments for plotly.
     """
     geo_data = gpd.read_file(PATH_MAP_DATA)
     fig = px.choropleth(
@@ -100,12 +108,14 @@ def plot_on_map(df: pd.DataFrame, quantity_key: str, **kwargs: Any) -> None:
 
 
 def correlation_heatmap(df: pd.DataFrame, **kwargs: Any) -> None:
-    """Plots a correlation heatmap.
+    """Plot a correlation heatmap.
 
     Parameters
     ----------
     df : pd.DataFrame
         Features DataFrame
+    **kwargs : Any
+        Extra arguments for plotly.
     """
     correlations = df[[*cst.FEATURES_LIST, cst.LOAD]].corr(method="pearson")
 
@@ -123,12 +133,14 @@ def correlation_heatmap(df: pd.DataFrame, **kwargs: Any) -> None:
 
 
 def scatter_matrix(df: pd.DataFrame, **kwargs: Any) -> None:
-    """Plots a scatter matrix.
+    """Plot a scatter matrix.
 
     Parameters
     ----------
     df : pd.DataFrame
         Features DataFrame.
+    **kwargs : Any
+        Extra arguments for plotly.
     """
     features_to_plot = [
         cst.LOAD_FORECAST,
