@@ -49,3 +49,15 @@ FEATURES_LIST = [
     SIN_WDR,
     *[f"{DAY_OF_WEEK}_{name}" for name in DAY_NAMES],
 ]
+
+
+# Models
+
+NAIVE_MODEL = "naive_model"
+LINEAR_MODEL = "linear_model"
+POLYNOMIAL_MODEL = "polynomial_model"
+RANDOM_FOREST_MODEL = "radom_forest_model"
+TRAIN = "train"
+TEST = "test"
+MAE = "mae"
+RMSE = "rmse"
