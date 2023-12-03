@@ -94,3 +94,8 @@ TRAIN = "train"
 TEST = "test"
 MAE = "mae"
 RMSE = "rmse"
+
+
+# Files
+JSON = ".json"
+JOBLIB = ".joblib"

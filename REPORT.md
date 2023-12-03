@@ -2,6 +2,14 @@
 
 This is a report on load prediction using weather data and load data from the NYISO (New York Independent System Operator).
 
+# Table of Contents
+
+1. [Available data](#available-data)
+2. [Features engineering](#features-engineering)
+3. [Data analysis](#data-analysis)
+4. [Modeling](#modeling)
+5. [Conclusion](#conclusion)
+
 ## Available data
 
 Four datasets were given:
@@ -73,7 +81,7 @@ This data structure will allow for an easier data analysis.
 
 ### Target load
 
-Target load has a very seasonal evolution. It is expected to heavily depend on the hour, on the season, on the week day...
+Target load is expected to have a very seasonal evolution. It is expected to heavily depend on the hour, on the season, on the week day...
 This is illustrated by the two following plots.
 
 - The first plot shows that each zone has a different order of magnitude of load, and that daily and yearly spikes occur.
@@ -84,7 +92,7 @@ This is illustrated by the two following plots.
 
 ![](img/actual_load_heatmap.png)
 
-On this second plot we can see that in N.Y.C., load spikes around 2PM each day, and that load increases a lot around July.
+On this second plot we can see that in N.Y.C., there are load spikes around 2PM each day, and that load increases a lot around July.
 
 We can also see the load is periodically lower (around week frequency). This probably indicates a lower load on weekends.
 
@@ -105,7 +113,7 @@ RMSE changes a lot from zone to zone, which was expected from the fact that aver
 ![](img/forecast_error_mae_percents.png)
 
 On this map we can see that forecast from NYISO is the least accurate for Mohawk Valley, and the most accurate for N.Y.C.
-This map foretells which zones forecasts we are likely to improve. We can't expect much significant improvement for N.Y.C., but Mohawk Valley has the most potential for improvement.
+This map foretells which zones forecasts we are likely to improve. We can't expect significant improvement for N.Y.C., but Mohawk Valley has the most potential for improvement.
 
 ### Features potential
 
@@ -122,7 +130,7 @@ From this heatmap, we can see that the features that are the most correlated wit
 We can also see that some features are correlated with each other:
 
 - sine and cosine of wind direction (-0.98)
-- probability of snow an temperature and dew point temperature
+- probability of snow and temperature and dew point temperature
 
 We could reconsider using some features given these results.
 
@@ -132,7 +140,7 @@ However, correlation matrix does not tell the full story. Sometimes, features ca
 
 This scatter matrix shows for instance that the temperature and dew point temperature low correlation was due to two tendencies: load increases at low and high temperature.
 
-Therefore, this feature might be more useful transformed.
+Therefore, this feature might be more useful transformed. We could split it in two features, for instance degrees under 50°F and degrees above 50°F. (Not done because of time constraints)
 
 ## Modeling
 
@@ -188,6 +196,63 @@ We could try and reduce the number of estimators to prevent this phenomenon.
 We can see that the model always perform at least 80% better than the baseline on the training set.
 
 Note that scores are very different here. This is probably caused by improvements of NYISO forecasts over time, resulting in much poorer accuracy of the baseline on the train set than on the test set.
+
+# Conclusion
+
+The study we led showed the following:
+
+- NYISO previsions accuracy are very dependant on the zone.
+- In some zones, like Mohawk Valley, we were able to refine those previsions and lower the resulting error up to 35% by using weather data and simple time features.
+- In other zones, like N.Y.C., we were unable to improve the predictions.
+- Models as simple as linear regression could already improve predictions in some zones.
+- More complex models, like gradient boosting regressors, were able to prevail in other zones.
+- More complex models were prone to overfit.
+
+To go further, one could:
+
+- Transform some features, like degrees above 50 and below 50.
+- Select the best subset of features (see appendix on ANOVA).
+- Compute better weights for weather stations (one could use population density data for instance).
+- Find more external data, for instance air pressure data was missing from the weather dataset.
+- Finetune models.
+
+# APPENDIX - ANOVA
+
+To go further, we could use ANOVA to perform feature selection. Here is the result of an ANOVA study for Mohawk Valley. Features are sorted by p-value.
+
+| Feature name              | p-value       |
+| ------------------------- | ------------- |
+| load_forecast             | 0.000000e+00  |
+| time_of_day_Morning       | 0.000000e+00  |
+| psn                       | 0.000000e+00  |
+| month_May                 | 0.000000e+00  |
+| month_January             | 0.000000e+00  |
+| month_April               | 1.014506e-279 |
+| month_February            | 4.324274e-270 |
+| time_of_day_working_hours | 7.554638e-263 |
+| month_October             | 7.170441e-200 |
+| dpt                       | 3.042871e-149 |
+| tmp                       | 8.171900e-141 |
+| time_of_day_Evening       | 1.238713e-132 |
+| month_July                | 2.113506e-125 |
+| month_December            | 3.143045e-122 |
+| month_August              | 1.947077e-117 |
+| gst                       | 1.084959e-88  |
+| month_September           | 2.100831e-81  |
+| sky                       | 2.676757e-80  |
+| wsp                       | 8.012246e-63  |
+| sin_wdr                   | 1.003316e-58  |
+| cos_wdr                   | 1.443800e-51  |
+| month_June                | 3.649108e-35  |
+| day_of_week_Sunday        | 1.221728e-29  |
+| month_November            | 1.408069e-24  |
+| day_of_week_Saturday      | 2.804093e-24  |
+| day_of_week_Tuesday       | 5.050490e-13  |
+| day_of_week_Monday        | 1.639320e-09  |
+| day_of_week_Wednesday     | 3.945480e-07  |
+| day_of_week_Thursday      | 2.090405e-02  |
+| month_March               | 3.764137e-01  |
+| day_of_week_Friday        | 4.523552e-01  |
 
 # APPENDIX ON REPOSITORY STRUCTURE
 

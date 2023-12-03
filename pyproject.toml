@@ -11,6 +11,18 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.9"
 dynamic = ["version"]
+dependencies = [
+    "ipykernel==6.27.1",
+    "ipython==8.18.1",
+    "nbformat==5.9.2",
+    "joblib==1.3.2",
+    "geopandas==0.14.1",
+    "numpy==1.26.2",
+    "plotly==5.18.0",
+    "pandas==2.1.3",
+    "scikit-learn==1.3.2",
+    "scipy==1.11.4",
+]
 
 [tool.setuptools]
 packages = ["ens_load_forecast"]

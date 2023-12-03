@@ -80,6 +80,7 @@ def initialize_models() -> Dict[str, BaseEstimator]:
 
 def train_models_for_each_zone(
     df_features: pd.DataFrame,
+    force_retrain: bool,
 ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Train each model on each zone.
 
@@ -95,6 +96,11 @@ def train_models_for_each_zone(
         - trained models
         - scores
     """
+    if not force_retrain:
+        models, scores = load_saved_models()
+        if len(models) != 0:
+            return models, scores
+    # If no model was found or retrain is forced:
     models = {}
     scores = {}
     for zone in df_features[cst.ZONE].unique():
@@ -103,6 +109,35 @@ def train_models_for_each_zone(
         models[zone] = zone_models
         scores[zone] = zone_scores
     save_models(models=models, scores=scores)
+    return models, scores
+
+
+def load_saved_models() -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Loads saved models and scores
+
+    Returns
+    -------
+    Tuple[Dict[str, Any], Dict[str, Any]]
+        Models and scores
+    """
+    scores = {}
+    models = {}
+    for path in PATH_SAVED_MODELS.iterdir():
+        zone = path.name
+        zone_models = {}
+        for file in path.iterdir():
+            file_name = file.name
+            suffix = file.suffix
+            if suffix == cst.JSON:
+                with open(file=file, mode="r", encoding="utf-8") as score_file:
+                    scores[zone] = json.load(score_file)
+            elif suffix == cst.JOBLIB:
+                model = joblib.load(filename=file)
+                model_name = file_name[: -len(cst.JOBLIB)]
+                zone_models[model_name] = model
+            else:
+                pass
+        models[zone] = zone_models
     return models, scores
 
 
