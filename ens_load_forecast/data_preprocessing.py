@@ -77,7 +77,6 @@ def get_load_forecast() -> pd.DataFrame:
     # Remove forbidden forecasts (They must be issued before 5AM on the previous day)
     df = remove_forbidden_forecasts(df=df, duplicates_key=cst.ZONE)
 
-
     return df
 
 
@@ -100,7 +99,7 @@ def get_weather(force_recompute: bool) -> pd.DataFrame:
     """
     if PATH_PREPROCESSED_WEATHER.exists() and not force_recompute:
         return get_preprocessed_weather()
-    
+
     df = pd.read_csv(
         PATH_WEATHER, index_col=1, low_memory=False
     )  # using second column as index (target date of the forecast)
@@ -119,23 +118,29 @@ def get_weather(force_recompute: bool) -> pd.DataFrame:
     # Remove forbidden forecasts (They must be issued before 5AM on the previous day)
     df = remove_forbidden_forecasts(df=df, duplicates_key=cst.STATION_CODE)
 
-
     # Add zone. Note: index gets duplicated here because some stations are used for
     # multiple zones.
     df = df.join(other=df_zones_and_stations, on=cst.STATION_CODE, how="left")
 
     aggregated_df = aggregate_weather_record(df=df)
-    
+
     aggregated_df.to_csv(path_or_buf=PATH_PREPROCESSED_WEATHER)
-    
+
     return aggregated_df
 
+
 def get_preprocessed_weather() -> pd.DataFrame:
-    df = pd.read_csv(
-        PATH_PREPROCESSED_WEATHER, index_col=0, low_memory=False
-    )
+    """Get weather data from a preprocessed csv file.
+
+    Returns
+    -------
+    pd.DataFrame
+        The preprocessed weather data.
+    """
+    df = pd.read_csv(PATH_PREPROCESSED_WEATHER, index_col=0, low_memory=False)
     df.index = pd.to_datetime(df.index)
     return df
+
 
 def remove_forbidden_forecasts(df: pd.DataFrame, duplicates_key: str) -> pd.DataFrame:
     """Removes forecasts that are not available the previous day at 5 AM, and drop duplicates
@@ -154,14 +159,18 @@ def remove_forbidden_forecasts(df: pd.DataFrame, duplicates_key: str) -> pd.Data
     """
     # Remove forbidden forecasts (must be available the day before at 5 AM)
     last_valid_date = df.index - pd.Timedelta(value=1, unit="days")
-    last_valid_date = last_valid_date.round(freq = "D") + pd.Timedelta(value = 5, unit="hours")
+    last_valid_date = last_valid_date.round(freq="D") + pd.Timedelta(
+        value=5, unit="hours"
+    )
 
     # Drop forbidden previsions
     df = df[df[cst.VINTAGE_DATE] < last_valid_date]
 
     # Only keep most recent prevision
     df["tmp_col"] = df.index
-    df = df.drop_duplicates(subset=["tmp_col", duplicates_key], keep="last").drop("tmp_col", axis="columns")
+    df = df.drop_duplicates(subset=["tmp_col", duplicates_key], keep="last").drop(
+        "tmp_col", axis="columns"
+    )
 
     return df
 
@@ -181,9 +190,50 @@ def aggregate_weather_record(df: pd.DataFrame) -> pd.DataFrame:
         Dataframe with aggregated values.
     """
     # Weigh and sum over stations
-    df[cst.SELECTED_WEATHER_FEATURES] = df[cst.SELECTED_WEATHER_FEATURES].mul(other=df[cst.WEIGHT], axis="index")
+    df[cst.SELECTED_WEATHER_FEATURES] = df[cst.SELECTED_WEATHER_FEATURES].mul(
+        other=df[cst.WEIGHT], axis="index"
+    )
 
     def func(x):
-        return x[cst.SELECTED_WEATHER_FEATURES].sum()/(x[cst.WEIGHT].sum())
+        return x[cst.SELECTED_WEATHER_FEATURES].sum() / (x[cst.WEIGHT].sum())
 
-    return df.groupby(by = [cst.DELIVERY_TS, cst.ZONE]).apply(func)
+    return df.groupby(by=[cst.DELIVERY_TS, cst.ZONE]).apply(func)
+
+
+def get_merged_dataset(
+    df_weather: pd.DataFrame,
+    df_load_actual: pd.DataFrame,
+    df_load_forecast: pd.DataFrame,
+) -> pd.DataFrame:
+    """Merges all datasets in one.
+
+    Parameters
+    ----------
+    df_weather : pd.DataFrame
+        Weather data
+    df_load_actual : pd.DataFrame
+        Actual load data
+    df_load_forecast : pd.DataFrame
+        Forecast load data
+
+    Returns
+    -------
+    pd.DataFrame
+        Merged DataFrame.
+    """
+    # Merge load and load forecast
+    df_merged = pd.merge(
+        left=df_load_forecast,
+        right=df_load_actual,
+        on=[cst.DELIVERY_TS, cst.ZONE],
+        how="inner",
+    )
+    # Two columns have the same name, we need to rename them after the merging operation
+    renaming_dict = {f"{cst.LOAD}_x": cst.LOAD_FORECAST, f"{cst.LOAD}_y": cst.LOAD}
+    df_merged = df_merged.rename(columns=renaming_dict)
+
+    # Merge the result with weather data
+    df_merged = pd.merge(
+        left=df_merged, right=df_weather, on=[cst.DELIVERY_TS, cst.ZONE], how="inner"
+    )
+    return df_merged

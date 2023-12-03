@@ -3,6 +3,7 @@
 # Data-related constants
 ZONE = "zone"
 LOAD = "load"
+LOAD_FORECAST = "load_forecast"
 HOUR = "hour"
 MONTH = "month"
 DAY_OF_YEAR = "day_of_year"
