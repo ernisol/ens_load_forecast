@@ -1,6 +1,7 @@
 """Module to load and pre-process data (handle index, timezones, etc.)."""
 import pandas as pd
 import pytz
+import numpy as np
 
 import ens_load_forecast.constants as cst
 from ens_load_forecast.paths import (
@@ -192,6 +193,11 @@ def aggregate_weather_record(df: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         Dataframe with aggregated values.
     """
+    # Cast wind speed to float
+    # (missing values are indicated with a string, therefore the column has object type)
+    df[df[cst.WSP] == cst.NG] = np.nan
+    df[cst.WSP] = df[cst.WSP].astype(float)
+
     # Weigh and sum over stations
     df[cst.SELECTED_WEATHER_FEATURES] = df[cst.SELECTED_WEATHER_FEATURES].mul(
         other=df[cst.WEIGHT], axis="index"
