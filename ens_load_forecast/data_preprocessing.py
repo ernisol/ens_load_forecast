@@ -6,8 +6,8 @@ import ens_load_forecast.constants as cst
 from ens_load_forecast.paths import (
     PATH_LOAD_ACTUAL,
     PATH_LOAD_FORECAST,
-    PATH_WEATHER,
     PATH_PREPROCESSED_WEATHER,
+    PATH_WEATHER,
     PATH_ZONES_AND_STATIONS,
 )
 
@@ -143,7 +143,9 @@ def get_preprocessed_weather() -> pd.DataFrame:
 
 
 def remove_forbidden_forecasts(df: pd.DataFrame, duplicates_key: str) -> pd.DataFrame:
-    """Removes forecasts that are not available the previous day at 5 AM, and drop duplicates
+    """Remove forecasts that are not available the previous day at 5 AM.
+
+    Also drop duplicates, keeping most recent forecast.
 
     Parameters
     ----------
@@ -176,8 +178,9 @@ def remove_forbidden_forecasts(df: pd.DataFrame, duplicates_key: str) -> pd.Data
 
 
 def aggregate_weather_record(df: pd.DataFrame) -> pd.DataFrame:
-    """Weighs forecasts according to column `weight`, sum and divide by sum
-    of weights.
+    """Weighs forecasts according to column `weight`.
+
+    Then sum and divide by sum of weights.
 
     Parameters
     ----------
@@ -205,7 +208,7 @@ def get_merged_dataset(
     df_load_actual: pd.DataFrame,
     df_load_forecast: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Merges all datasets in one.
+    """Merge all datasets in one.
 
     Parameters
     ----------

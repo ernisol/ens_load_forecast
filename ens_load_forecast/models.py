@@ -1,15 +1,15 @@
-"""Module used for model training"""
+"""Module used for model training."""
 
-from typing import Dict, Any, Tuple
+from typing import Any, Dict, Tuple
 
 import pandas as pd
+from sklearn.base import BaseEstimator
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, mean_absolute_error
-from sklearn.base import BaseEstimator
 
 import ens_load_forecast.constants as cst
 
@@ -17,13 +17,13 @@ import ens_load_forecast.constants as cst
 class NaiveModel(BaseEstimator):
     """Naive model that returns directly the input load forecast."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107 (disable ruff: missing docstring)
         super().__init__()
 
-    def fit(self, X, y) -> None:
+    def fit(self, X, y) -> None:  # noqa: D102, N803
         pass
 
-    def predict(self, X):
+    def predict(self, X):  # noqa: D102, N803
         return X[cst.LOAD_FORECAST]
 
 
@@ -52,11 +52,27 @@ def initialize_models() -> Dict[str, BaseEstimator]:
         cst.NAIVE_MODEL: naive_model,
         cst.LINEAR_MODEL: linear_model,
         cst.POLYNOMIAL_MODEL: polynomial_model,
-        cst.RANDOM_FOREST_MODEL: random_forest_model,
+        # cst.RANDOM_FOREST_MODEL: random_forest_model,
     }
 
 
-def train_models_for_each_zone(df_features):
+def train_models_for_each_zone(
+    df_features: pd.DataFrame,
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Train each model on each zone.
+
+    Parameters
+    ----------
+    df_features : pd.DataFrame
+        DataFrame containing features for all zones
+
+    Returns
+    -------
+    Tuple[Dict[str, Any], Dict[str, Any]]
+        Two dictionaries:
+        - trained models
+        - scores
+    """
     models = {}
     scores = {}
     for zone in df_features[cst.ZONE].unique():
@@ -70,7 +86,9 @@ def train_models_for_each_zone(df_features):
 def train_models(
     df_features: pd.DataFrame,
 ) -> Tuple[Dict[str, BaseEstimator], Dict[str, Any]]:
-    """Train and score all defined models on the given Dataset (preferably one zone at a time)
+    """Train and score all defined models on the given Dataset.
+
+    Preferably `df_features` should only contain one zone.
 
     Parameters
     ----------
